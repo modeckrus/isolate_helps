@@ -104,3 +104,7 @@ coverage/
 .DS_Store
 .dart_tool
 .packages
+pubspec.lock
+pubspec.lock
+.gitignore
+.packages
