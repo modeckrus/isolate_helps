@@ -2,12 +2,10 @@ import 'dart:async';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/src/builder/build_step.dart';
+import 'package:isolate_helps/annotations/isolate.dart';
+import 'package:isolate_helps/src/generators/visitor.dart';
 import 'package:merging_builder/merging_builder.dart';
-import 'package:quote_buffer/src/quote.dart';
 import 'package:source_gen/src/constants/reader.dart';
-
-import '../../researcher_builder.dart';
-import 'visitor.dart';
 
 class IsolateGenerator extends MergingGenerator<String, AbstractForIsolate> {
   static String get header {

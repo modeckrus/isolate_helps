@@ -1,7 +1,6 @@
 import 'package:build/build.dart';
+import 'package:isolate_helps/src/generators/isolate_generator.dart';
 import 'package:merging_builder/merging_builder.dart';
-
-import 'researcher_builder.dart';
 
 Builder isolateBuilder(BuilderOptions options) {
   final defaultOptions = BuilderOptions({

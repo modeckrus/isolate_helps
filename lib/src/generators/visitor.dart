@@ -1,8 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/visitor.dart';
-import 'package:async/async.dart';
-import 'helper.dart';
+import 'package:isolate_helps/src/generators/helper.dart';
 
 const String port = 'port';
 
