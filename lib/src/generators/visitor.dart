@@ -47,7 +47,7 @@ class MethodToClassesVisitor extends SimpleElementVisitor {
 
       string += 'const $typeName({\n';
       for (var parametrName in parametrsNames) {
-        string += 'required this.$parametrName,\n';
+        string += 'required this.${parametrName.name},\n';
       }
       string += '});\n}\n';
       result += string;
@@ -98,7 +98,7 @@ class MethodToClassesVisitor extends SimpleElementVisitor {
       string += 'const $typeName({\n';
 
       for (var parametrName in parametrsNames) {
-        string += 'required this.$parametrName,\n';
+        string += 'required this.${parametrName.name},\n';
       }
 
       string += '});\n}\n';
@@ -114,7 +114,7 @@ class MethodToClassesVisitor extends SimpleElementVisitor {
       String parameters = '';
       for (var parameter in value.parameters) {
         if (parameter.name == port) {
-          parameters += '$parameter: $parameter.sendPort, ';
+          parameters += '${parameter.name}: ${parameter.name}.sendPort, ';
         } else {
           parameters += '${parameter.name}: ${parameter.name}, ';
         }
@@ -156,11 +156,11 @@ class MethodToClassesVisitor extends SimpleElementVisitor {
     methods.forEach((declaration, value) {
       String parameters = '';
       for (var parameter in value.parameters) {
-        if (parameter != port) {
+        if (parameter.name != port) {
           if (parameter.isNamed) {
-            parameters += '${parameter.name}: object.${parameter.name}';
+            parameters += '${parameter.name}: object.${parameter.name}, ';
           } else {
-            parameters += 'object.$parameter, ';
+            parameters += 'object.${parameter.name}, ';
           }
         }
       }
