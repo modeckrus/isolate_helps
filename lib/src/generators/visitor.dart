@@ -18,7 +18,7 @@ class MethodToClassesVisitor extends SimpleElementVisitor {
       //Generate Class for Method with SendPort in Argument
       final name = method.name;
       String parameters = '';
-      List<String> parametrsNames = ['port'];
+      List<Parameter> parametrsNames = [Parameter('port', false)];
 
       for (var parameter in method.parameters) {
         final type = parameter.type.getDisplayString(withNullability: true);
@@ -27,7 +27,7 @@ class MethodToClassesVisitor extends SimpleElementVisitor {
         if (parameterName == port) {
           parameterName = '\$$port';
         }
-        parametrsNames.add(parameterName);
+        parametrsNames.add(Parameter(parameterName, parameter.isNamed));
         parameters += 'final $type $parameterName;\n';
       }
       String typeName = '\$${name}${className}Isolate';
@@ -60,7 +60,7 @@ class MethodToClassesVisitor extends SimpleElementVisitor {
       String name = method.name;
       name = name.replaceAll('=', '');
       String parameters = '';
-      List<String> parametrsNames = ['port'];
+      List<Parameter> parametrsNames = [Parameter('port', false)];
 
       String typeName = '\$$name${className}Isolate';
       typeName =
@@ -72,7 +72,7 @@ class MethodToClassesVisitor extends SimpleElementVisitor {
           if (parameterName == port) {
             parameterName = '\$$port';
           }
-          parametrsNames.add(parameterName);
+          parametrsNames.add(Parameter(parameterName, parameter.isNamed));
           parameters += 'final $type $parameterName;\n';
         }
         methods[method.getDisplayString(withNullability: true)] =
@@ -113,10 +113,10 @@ class MethodToClassesVisitor extends SimpleElementVisitor {
     methods.forEach((declaration, value) {
       String parameters = '';
       for (var parameter in value.parameters) {
-        if (parameter == port) {
+        if (parameter.name == port) {
           parameters += '$parameter: $parameter.sendPort, ';
         } else {
-          parameters += '$parameter: $parameter, ';
+          parameters += '${parameter.name}: ${parameter.name}, ';
         }
       }
       parameters = parameters.substring(0, parameters.length - 2);
@@ -157,7 +157,11 @@ class MethodToClassesVisitor extends SimpleElementVisitor {
       String parameters = '';
       for (var parameter in value.parameters) {
         if (parameter != port) {
-          parameters += 'object.$parameter, ';
+          if (parameter.isNamed) {
+            parameters += '${parameter.name}: object.${parameter.name}';
+          } else {
+            parameters += 'object.$parameter, ';
+          }
         }
       }
       if (parameters.length > 2) {

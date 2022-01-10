@@ -41,11 +41,11 @@ enum MethodType {
 
 class MethodWithParameters {
   final String className;
-  final List<String> parameters;
+  final List<Parameter> parameters;
   final String methodName;
   final DartType returnType;
   final MethodType methodType;
-  String? setter;
+  Parameter? setter;
   MethodWithParameters(
       {required this.className,
       required this.parameters,
@@ -53,4 +53,11 @@ class MethodWithParameters {
       required this.returnType,
       required this.methodType,
       this.setter});
+}
+
+class Parameter {
+  final String name;
+  final bool isNamed;
+
+  Parameter(this.name, this.isNamed);
 }
