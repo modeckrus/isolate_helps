@@ -108,3 +108,5 @@ pubspec.lock
 pubspec.lock
 .gitignore
 .packages
+example
+.dart_tool
