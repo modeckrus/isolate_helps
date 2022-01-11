@@ -5,3 +5,10 @@ builders:
     build_extensions: {"lib/$lib$": ["*.dart"]}
     auto_apply: root_package
     build_to: source
+  grpcBuilder:
+    import: "package:isolate_helps/builder.dart"
+    builder_factories: ['grpcBuilder']
+    auto_apply: dependents
+    build_extensions: {".dart": [".grpcclass.part"]}
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]

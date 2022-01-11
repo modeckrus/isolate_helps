@@ -1,6 +1,10 @@
 targets:
   $default:
     builders:
+      isolate_helps|grpcBuilder:
+          enabled: True
+          generate_for:
+            - lib/model/*
       isolate_helps|isolate_builder:
         enabled: true
         options:

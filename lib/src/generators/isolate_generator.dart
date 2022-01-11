@@ -27,9 +27,17 @@ class IsolateGenerator extends MergingGenerator<String, AbstractForIsolate> {
     final b = StringBuffer();
     b.writeln('import \'dart:async\';');
     b.writeln('import \'dart:isolate\';');
+
     await for (final string in stream) {
       b.write(modifyOutput(string));
     }
+
+    final after = b.toString();
+    b.clear();
+    for (var importStr in imports) {
+      b.writeln('import \'package:$importStr\';');
+    }
+    b.write(after);
     initialiseAndCases.forEach((isolateName, value) {
       final initialise = value.initializer;
       final cases = value.cases;
@@ -57,6 +65,7 @@ Future<void> ${name}IsolateParser(SendPort sendPort) async {
   }
 
   String initFunction = '';
+  List<String> imports = [];
 
   @override
   String generateStreamItemForAnnotatedElement(
@@ -72,6 +81,18 @@ Future<void> ${name}IsolateParser(SendPort sendPort) async {
     final isolateName = annotation.read('isolateName').stringValue;
     final isInitFunction = annotation.read('isInitFunction').boolValue;
     final instance = annotation.read('instance').stringValue;
+    if (element.source?.uri.path != null) {
+      final path = element.source!.uri.path;
+      bool needAdd = true;
+      imports.forEach((element) {
+        if (element == path) {
+          needAdd = false;
+        }
+      });
+      if (needAdd) {
+        imports.add(path);
+      }
+    }
     if (isInitFunction == true) {
       initFunction += instance + ';\n';
     } else {

@@ -2,6 +2,8 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/visitor.dart';
 import 'package:isolate_helps/src/generators/helper.dart';
 
+import 'method_with_parameters.dart';
+
 const String port = 'port';
 
 class MethodToClassesVisitor extends SimpleElementVisitor {

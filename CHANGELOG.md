@@ -2,6 +2,13 @@
 ### Fixes
 
 -Fixed Named Parameters
+### Enhancements
+
+-Added Grpc Class
+# 0.0.3
+### Fixes
+
+-Fixed Named Parameters
 # 0.0.2
 
 ### Enhancements
