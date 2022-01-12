@@ -1,3 +1,11 @@
+# 0.0.5
+### Fixes
+
+-Fix some code;
+### Enhancements
+
+-Support Stream
+-Supprot Exceptions
 # 0.0.3
 ### Fixes
 
