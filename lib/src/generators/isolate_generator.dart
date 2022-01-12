@@ -54,6 +54,7 @@ Future<void> ${name}IsolateParser(SendPort sendPort) async {
 ''';
       parseFunc += '''
     default:
+    \tthrow Exception('Something go wrong');
     }
   }
 }
@@ -99,8 +100,11 @@ Future<void> ${name}IsolateParser(SendPort sendPort) async {
       final visitor = MethodToClassesVisitor(
           className: element.displayName, instance: instance);
       element.accept(visitor);
-      initialiseAndCases[isolateName] = InitializerAndCases(
-          initializer: visitor.inisiliser, cases: visitor.cases);
+      var initialiseAndCasesInst = initialiseAndCases[isolateName] ??
+          InitializerAndCases(initializer: '', cases: '');
+      initialiseAndCasesInst = initialiseAndCasesInst.add(InitializerAndCases(
+          initializer: visitor.inisiliser, cases: visitor.cases));
+      initialiseAndCases[isolateName] = initialiseAndCasesInst;
       buffer.write('\n//Classes\n${visitor.result}\n');
       // buffer.write('\n//Cases\n${visitor.cases}\n');
       // buffer.write('\n//Initializers\n${visitor.inisiliser}\n');
@@ -117,4 +121,11 @@ class InitializerAndCases {
     required this.initializer,
     required this.cases,
   });
+  InitializerAndCases add(InitializerAndCases i) {
+    String newInitilizer = initializer;
+    newInitilizer += i.initializer;
+    String newCases = cases;
+    newCases += i.cases;
+    return InitializerAndCases(initializer: newInitilizer, cases: newCases);
+  }
 }

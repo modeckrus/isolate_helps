@@ -35,12 +35,19 @@ class MethodToClassesVisitor extends SimpleElementVisitor {
       String typeName = '\$${name}${className}Isolate';
       typeName =
           typeName.replaceRange(1, 2, typeName.substring(1, 2).toUpperCase());
+      final methodDisplayString =
+          method.returnType.getDisplayString(withNullability: true);
+      bool isReturnTypeStream = false;
+      if (methodDisplayString.contains('Stream<')) {
+        isReturnTypeStream = true;
+      }
       methods[method.getDisplayString(withNullability: true)] =
           MethodWithParameters(
               className: typeName,
               parameters: parametrsNames,
               methodName: method.name,
               returnType: method.returnType,
+              isReturnTypeStream: isReturnTypeStream,
               methodType: MethodType.method);
 
       newTypes.add(typeName);
@@ -77,6 +84,12 @@ class MethodToClassesVisitor extends SimpleElementVisitor {
           parametrsNames.add(Parameter(parameterName, parameter.isNamed));
           parameters += 'final $type $parameterName;\n';
         }
+        final methodDisplayString =
+            method.returnType.getDisplayString(withNullability: true);
+        bool isReturnTypeStream = false;
+        if (methodDisplayString.contains('Stream<')) {
+          isReturnTypeStream = true;
+        }
         methods[method.getDisplayString(withNullability: true)] =
             MethodWithParameters(
                 className: typeName,
@@ -84,14 +97,22 @@ class MethodToClassesVisitor extends SimpleElementVisitor {
                 methodName: method.name,
                 returnType: method.returnType,
                 setter: parametrsNames[1],
+                isReturnTypeStream: isReturnTypeStream,
                 methodType: MethodType.setter);
       } else {
+        final methodDisplayString =
+            method.returnType.getDisplayString(withNullability: true);
+        bool isReturnTypeStream = false;
+        if (methodDisplayString.contains('Stream<')) {
+          isReturnTypeStream = true;
+        }
         methods[method.getDisplayString(withNullability: true)] =
             MethodWithParameters(
                 className: typeName,
                 parameters: parametrsNames,
                 methodName: method.name,
                 returnType: method.returnType,
+                isReturnTypeStream: isReturnTypeStream,
                 methodType: MethodType.getter);
       }
 
@@ -131,19 +152,45 @@ class MethodToClassesVisitor extends SimpleElementVisitor {
         declarationStr[1] = declarationParameters;
         declaration = declarationStr.join('(');
       }
-      if (value.methodType == MethodType.setter) {
-        string += '''@override\n$declaration{
+      final returnName =
+          value.returnType.getDisplayString(withNullability: true);
+      if (value.isReturnTypeStream) {
+        string += '''@override\n$declaration async*{
         \tReceivePort port = ReceivePort();
         \tsendPort.send(${value.className}($parameters));
+        \tyield* port.asBroadcastStream().map((_\$mapEvent) {
+      switch (_\$mapEvent.runtimeType) {
+        case IsolateException:
+          _\$mapEvent = _\$mapEvent as IsolateException;
+          throw _\$mapEvent.exception;
+        default:
+          return _\$mapEvent;
+      }
+    });
         }
         ''';
       } else {
-        string += '''@override\n$declaration async{
+        if (value.methodType == MethodType.setter) {
+          string += '''@override\n$declaration{
         \tReceivePort port = ReceivePort();
         \tsendPort.send(${value.className}($parameters));
-        \treturn await port.first;
         }
         ''';
+        } else {
+          string += '''@override\n$declaration async{
+        \tReceivePort port = ReceivePort();
+        \tsendPort.send(${value.className}($parameters));
+        \tvar result = await port.first;
+        \tswitch (result.runtimeType) {
+        \t\tcase IsolateException:
+        \t\t\tresult = result as IsolateException;
+        \t\t\tthrow result.exception;
+        \t\tdefault:
+        \t\t\treturn result;
+        \t\t}
+        }
+        ''';
+        }
       }
     });
     string += '}\n';
@@ -169,37 +216,43 @@ class MethodToClassesVisitor extends SimpleElementVisitor {
       if (parameters.length > 2) {
         parameters = parameters.substring(0, parameters.length - 2);
       }
+      string += '''case ${value.className}:
+            \tobject = object as ${value.className};
+            \ttry{''';
       switch (value.methodType) {
         case MethodType.method:
-          string += '''case ${value.className}:
-            \tobject = object as ${value.className};
+          string += '''
             \tfinal result = await instance${className}.${value.methodName}($parameters);
           ''';
           if (value.returnType.isVoid ||
               value.returnType.getDisplayString(withNullability: true) ==
                   'Future<void>') {
             string += '\n object.port.send(true);\n break;';
+          } else if (value.isReturnTypeStream) {
+            string += '''\nresult.listen((_\$resultEvent) {
+          object.port.send(_\$resultEvent);
+        });''';
           } else {
-            string += '\n object.port.send(result);\n break;';
+            string += '\n object.port.send(result);\n';
           }
           break;
         default:
       }
       if (value.methodType == MethodType.method) {
       } else if (value.methodType == MethodType.getter) {
-        string += '''case ${value.className}:
-      \tobject = object as ${value.className};
+        string += '''
       \tfinal result = await instance${className}.${value.methodName};
       \tobject.port.send(result);
-      \tbreak;
       ''';
       } else if (value.methodType == MethodType.setter) {
-        string += '''case ${value.className}:
-      \tobject = object as ${value.className};
+        string += '''
       \tinstance${className}.${value.methodName} object.${value.setter};
-      \tbreak;
       ''';
       }
+      string += '''}catch(e){
+      \t  object.port.send(IsolateException(e));
+      }
+      break;''';
     });
     cases += string;
   }

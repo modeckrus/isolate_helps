@@ -11,6 +11,7 @@ class MethodWithParameters {
   final List<Parameter> parameters;
   final String methodName;
   final DartType returnType;
+  final bool isReturnTypeStream;
   final MethodType methodType;
   Parameter? setter;
   MethodWithParameters(
@@ -19,6 +20,7 @@ class MethodWithParameters {
       required this.methodName,
       required this.returnType,
       required this.methodType,
+      required this.isReturnTypeStream,
       this.setter});
 }
 

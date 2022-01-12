@@ -19,8 +19,8 @@ class GrpcClassGenerator extends GeneratorForAnnotation<GrpcClass> {
     final name = element.displayName;
     buffer.writeln('extension ${name}Grpc on $name{');
     annotation.read('to').listValue.forEach((classElement) {
-      buffer.writeln('//$classElement');
-      buffer.writeln('/*\n');
+      // buffer.writeln('//$classElement');
+      // buffer.writeln('/*\n');
       DartObject? typeField = classElement.getField('type');
       if (typeField == null) {
         return;
@@ -44,24 +44,33 @@ class GrpcClassGenerator extends GeneratorForAnnotation<GrpcClass> {
           buffer.writeln('$prefixedName to$name(){');
           element.accept(visitor);
           element.visitChildren(visitor);
-          buffer.writeln('\n/*\n${visitor.fields}\n*/\n');
+          // buffer.writeln('\n/*\n${visitor.fields}\n*/\n');
           buffer.writeln('return $prefixedName(');
           visitor.parameters.forEach((parameter) {
-            final name = parameter.name;
-            if (parameter.isNamed) {
-              buffer.writeln('$name: $name, ');
-            } else {
-              buffer.writeln('$name, ');
+            bool shold = false;
+            fields.forEach((field) {
+              if (field.name == parameter.name) {
+                shold = true;
+                return;
+              }
+            });
+            if (shold) {
+              final name = parameter.name;
+              if (parameter.isNamed) {
+                buffer.writeln('$name: $name, ');
+              } else {
+                buffer.writeln('$name, ');
+              }
             }
           });
           buffer.writeln(');');
           buffer.writeln('}');
-          buffer.writeln('\n*/');
+          // buffer.writeln('\n*/');
         }
       }
     });
     annotation.read('from').listValue.forEach((classElement) {
-      buffer.writeln('//$classElement');
+      // buffer.writeln('//$classElement');
       DartObject? typeField = classElement.getField('type');
       if (typeField == null) {
         return;
@@ -84,7 +93,7 @@ class GrpcClassGenerator extends GeneratorForAnnotation<GrpcClass> {
 
           buffer.writeln('void from$name($prefixedName input){');
           element.accept(visitor);
-          buffer.writeln('\n/*\n${visitor.fields}\n*/\n');
+          // buffer.writeln('\n/*\n${visitor.fields}\n*/\n');
           visitor.fields.forEach((field) {
             for (var originalField in fields) {
               if (originalField.displayName == field.name) {
