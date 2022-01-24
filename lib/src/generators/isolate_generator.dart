@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:isolate';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/src/builder/build_step.dart';
@@ -46,9 +47,10 @@ class IsolateGenerator extends MergingGenerator<String, AbstractForIsolate> {
 Future<void> ${name}IsolateParser(SendPort sendPort) async {
   \tReceivePort receivePort = ReceivePort();
   \tsendPort.send(receivePort.sendPort);
+  \tfinal stream = receivePort.asBroadcastStream();
   \t$initFunction
   \t$initialise
-  \tawait for (var object in receivePort) {
+  \tawait for (var object in stream) {
   \tswitch (object.runtimeType) {
   \t$cases
 ''';
